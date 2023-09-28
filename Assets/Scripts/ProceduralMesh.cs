@@ -39,7 +39,7 @@ public class ProceduralMesh : MonoBehaviour {
 	[SerializeField]
 	MeshOptimizationMode meshOptimization;
 
-	[SerializeField, Range(1, 75)] //50
+	[SerializeField, Range(1, 200)] //50
 	int resolution = 1;
 
 	[System.Flags]

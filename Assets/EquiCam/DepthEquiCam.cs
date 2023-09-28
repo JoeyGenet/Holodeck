@@ -1,11 +1,14 @@
 ﻿using UnityEngine;
+using UnityEditor;
+using System.Collections;
+using System.IO;
 namespace BodhiDonselaar
 {
 	[RequireComponent(typeof(Camera))]
 	public class DepthEquiCam : MonoBehaviour
 	{
 		private static Material equi;
-		public Size RenderResolution = Size.Default;
+		public Size RenderResolution = Size.High;
 		private RenderTexture cubemap;
 		private RenderTexture cubemapSide;
 		private Camera cam;
@@ -94,7 +97,7 @@ namespace BodhiDonselaar
 			cubemapSide.antiAliasing = 1;
 			cubemapSide.filterMode = FilterMode.Bilinear;
 			cubemapSide.anisoLevel = 0;
-			cubemapSide.dimension = UnityEngine.Rendering.TextureDimension.Cube;
+			cubemapSide.dimension = UnityEngine.Rendering.TextureDimension.Tex2D;
 			cubemapSide.autoGenerateMips = false;
 			cubemapSide.useMipMap = false;
 		}

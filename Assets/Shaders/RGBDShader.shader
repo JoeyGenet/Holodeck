@@ -61,6 +61,8 @@ Shader "Unlit/RGBDShader"
     {
         // sample the texture
         fixed4 col = tex2D(_MainTex, i.uv);
+        //add logic to calculate euclidean distance, write to depth channel?
+        //should be same brightnes as soruce depth
         // apply fog
         UNITY_APPLY_FOG(i.fogCoord, col);
         return col;
