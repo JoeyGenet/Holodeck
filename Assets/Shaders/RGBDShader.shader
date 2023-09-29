@@ -71,6 +71,7 @@ Shader "Unlit/RGBDShader"
     float4 fragShadow( v2fShadow i ) : SV_Target
     {
         SHADOW_CASTER_FRAGMENT(i)
+        return float4(0, 1, 0, 1);
     }
 
     ENDCG
@@ -104,7 +105,7 @@ Shader "Unlit/RGBDShader"
            
             CGPROGRAM
             #pragma vertex vert
-            #pragma fragment fragShadow
+            #pragma fragment frag //Shadow
             #pragma target 2.0
             #pragma multi_compile_shadowcaster
 
