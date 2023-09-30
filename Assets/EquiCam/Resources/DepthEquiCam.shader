@@ -31,7 +31,8 @@
 			{
 				float cy = cos(i.uv.y);
 				float depth = texCUBE(_MainTex, float3(-sin(i.uv.x)*cy, -sin(i.uv.y), -cos(i.uv.x)*cy));
-				float4 depthColor = float4(depth, depth, depth, 1);
+				float normFactor = sqrt(3);
+				float4 depthColor = float4(depth, depth, depth, 1); //need normalized?
 				return depthColor;
 			}
 			ENDCG

@@ -65,7 +65,8 @@ Shader "Unlit/DistanceFromCamShader"
         fixed4 col = tex2D(_MainTex, i.uv);
         //add logic to calculate euclidean distance, write to depth channel?
         //should be same brightnes as soruce depth
-        float distanceFromCamera = 1-length(i.color.xyz - mul(unity_WorldToObject, _WorldSpaceCameraPos)); //_CamPos);
+        //float distanceFromCamera = 1-length(i.color.xyz - mul(unity_WorldToObject, _WorldSpaceCameraPos)); //local space of mesh, ie scale agnostic
+        float distanceFromCamera = 1-length(mul(unity_ObjectToWorld, i.color.xyz) - _WorldSpaceCameraPos);   //global space, ie scale matters, only works when scale=1 though
         outputDepth = distanceFromCamera;
         // apply fog
         UNITY_APPLY_FOG(i.fogCoord, col);
