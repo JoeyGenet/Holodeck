@@ -84,6 +84,8 @@ public class DepthReprojection : EditorWindow
                 }
             }
             dstView.Apply();
+            string path = Application.dataPath+"/../"+AssetDatabase.GetAssetPath(dstView);
+            System.IO.File.WriteAllBytes(path, dstView.EncodeToPNG());
             Debug.Log("Done");
             Debug.Log("maxSrcDist: "+maxSrcDist+", maxSrcDist: "+maxDstDist);
         }

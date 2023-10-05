@@ -1,0 +1,18 @@
+!table
+!version 300
+!charset Neutral
+
+Definition Table
+  File "Tile__0__0.jpg"
+  Type "RASTER"
+  (-97.74227142, 30.29211760) (0, 0) Label "Point 1",
+  (-97.72952557, 30.28091669) (594, 522) Label "Point 2",
+  (-97.74227142, 30.28091669) (0, 522) Label "Point 3",
+  (-97.72952557, 30.29211760) (594, 0) Label "Point 4",
+  (-97.73589849, 30.28651714) (297, 261) Label "Point 5",
+  (-97.73589849, 30.29211760) (297, 0) Label "Point 6",
+  (-97.74227142, 30.28651714) (0, 261) Label "Point 7",
+  (-97.72952557, 30.28651714) (594, 261) Label "Point 8",
+  (-97.73589849, 30.28091669) (297, 522) Label "Point 9"
+ CoordSys Earth Projection 1, 104, 7, 0
+ Units "degree"
