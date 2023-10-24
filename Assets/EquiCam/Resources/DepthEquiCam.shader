@@ -13,6 +13,8 @@
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
+			#include "UnityCG.cginc"
+
 			struct v2f
 			{
 				float2 uv : TEXCOORD0;
@@ -32,6 +34,7 @@
 				float cy = cos(i.uv.y);
 				float depth = texCUBE(_MainTex, float3(-sin(i.uv.x)*cy, -sin(i.uv.y), -cos(i.uv.x)*cy));
 				float normFactor = sqrt(3);
+				//depth = 1 - LinearEyeDepth(depth);
 				float4 depthColor = float4(depth, depth, depth, 1); //need normalized?
 				return depthColor;
 			}

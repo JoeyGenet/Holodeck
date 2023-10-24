@@ -50,7 +50,7 @@ public class ProceduralMesh : MonoBehaviour {
 	[SerializeField]
 	GizmoMode gizmos;
 
-	public enum MaterialMode { Flat, Ripple, LatLonMap, CubeMap, BlueOffice }
+	public enum MaterialMode { PanoramaDepth, ButterflyDepth }
 
 	[SerializeField]
 	MaterialMode material;

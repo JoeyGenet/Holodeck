@@ -158,13 +158,10 @@ MonoBehaviour:
   meshOptimization: 0
   resolution: 75
   gizmos: 1
-  material: 4
+  material: 1
   materials:
-  - {fileID: 2100000, guid: 95dee7f8f45e149f5965edecbbd92893, type: 2}
-  - {fileID: 2100000, guid: c2470d2e0c902441a88c202fd07393ca, type: 2}
-  - {fileID: 2100000, guid: 04cfba946e04642e5abbfcb863823b2c, type: 2}
-  - {fileID: 2100000, guid: dc836dbcb655b4c69952d5957d213922, type: 2}
   - {fileID: 2100000, guid: a3064e4f69c5ddf4fb96222368b22c76, type: 2}
+  - {fileID: 2100000, guid: 08d20132d720dda4d90199f8bd06a9c3, type: 2}
 --- !u!23 &236625718
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -463,6 +460,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82e82dc9d07050a4cbec950dcd1fd836, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  trainingDirectory: Assets/Training Data/ButterflyData/Training
+  displacementVector: {x: 0, y: 0, z: 0}
+  renderMaterial: {fileID: 2100000, guid: 08d20132d720dda4d90199f8bd06a9c3, type: 2}
 --- !u!114 &963194234
 MonoBehaviour:
   m_ObjectHideFlags: 0
