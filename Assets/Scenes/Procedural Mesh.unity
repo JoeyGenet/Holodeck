@@ -461,7 +461,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   trainingDirectory: Assets/Training Data/ButterflyData/Training
-  displacementVector: {x: 0, y: 0, z: 0}
+  cameraDisplacement1: {x: -0.08, y: 0, z: -0.01}
+  cameraDisplacement2: {x: 0.08, y: 0, z: 0.01}
   renderMaterial: {fileID: 2100000, guid: 08d20132d720dda4d90199f8bd06a9c3, type: 2}
 --- !u!114 &963194234
 MonoBehaviour:
