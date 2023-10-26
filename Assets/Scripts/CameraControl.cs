@@ -14,6 +14,7 @@ public class CameraControl : MonoBehaviour
     //   - RGB
     // - ...
     [SerializeField] private string trainingDirectory;
+    private string[] subfolders;
 
     //vector to move camera along for displacement
     [SerializeField][Tooltip("Displacement of camera from orign prior to reprojection.")] private Vector3 cameraDisplacement1;
@@ -21,12 +22,12 @@ public class CameraControl : MonoBehaviour
     [SerializeField] private Material renderMaterial;
 
     private bool isRendering = false;
-    private int renderIndex = 0;
+    private int renderIndex = 800;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        subfolders = AssetDatabase.GetSubFolders(trainingDirectory);
     }
 
     // Update is called once per frame
@@ -50,7 +51,7 @@ public class CameraControl : MonoBehaviour
             Debug.Log("Generating reprojections for files in "+trainingDirectory);
             GenerateReprojections();
             renderIndex++;
-            if (renderIndex == 3)
+            if (renderIndex == subfolders.Length)
             {
                 isRendering = false;
                 AssetDatabase.Refresh();
@@ -60,9 +61,6 @@ public class CameraControl : MonoBehaviour
 
     void GenerateReprojections()
     {
-        //get relevant directories
-        var subfolders = AssetDatabase.GetSubFolders(trainingDirectory);
-
         //each subfolder contains RGB, D
         //foreach (string subfolder in subfolders)
         string subfolder = subfolders[renderIndex];
@@ -93,7 +91,7 @@ public class CameraControl : MonoBehaviour
         reproject(srcView, new Vector3(0,0,0), dstView, cameraDisplacement2);
 
         //save new reprojection in the asset directory
-        string path = subfolder+"/"+label+"test1.png";
+        string path = subfolder+"/"+label+"UncertaintyMask.png";
         System.IO.File.WriteAllBytes(path, dstView.EncodeToPNG());
 
         //ScreenCapture.CaptureScreenshot(subfolder+"/"+label+"test.png", 4);
@@ -105,7 +103,7 @@ public class CameraControl : MonoBehaviour
         {
             for (int j=0; j<srcView.height; j++)
             {
-                dstView.SetPixel(i, j, Color.red);
+                dstView.SetPixel(i, j, Color.white); //Color.red
             }
         }
 
@@ -148,8 +146,8 @@ public class CameraControl : MonoBehaviour
                 int dstPixelScreenY = (int)((dstPixelB+90)/180 * srcView.height);// % dstView.height;
 
                 Color currentDstColor = dstView.GetPixel(dstPixelScreenX, dstPixelScreenY);
-                if (dstPixelColor > currentDstColor.g)
-                    dstView.SetPixel(dstPixelScreenX, dstPixelScreenY, new Color(dstPixelColor,dstPixelColor,dstPixelColor)); //*Color.white);
+                //if (dstPixelColor > currentDstColor.g)
+                    dstView.SetPixel(dstPixelScreenX, dstPixelScreenY, Color.black); //new Color(dstPixelColor,dstPixelColor,dstPixelColor)
                 // Debug.Log("dst sceen X and Y: "+dstPixelScreenX+", "+dstPixelScreenY+" | color: "+dstPixelColor);
             }
         }
