@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.EditorTools;
+using BodhiDonselaar;
 
 public class CameraControl : MonoBehaviour
 {
@@ -19,15 +20,19 @@ public class CameraControl : MonoBehaviour
     //vector to move camera along for displacement
     [SerializeField][Tooltip("Displacement of camera from orign prior to reprojection.")] private Vector3 cameraDisplacement1;
     [SerializeField][Tooltip("Displacement of camera used in the reprojection itself.")] private Vector3 cameraDisplacement2;
+    [SerializeField][Tooltip("If set to true, will reproject color pixels of the image into new position.")] private bool reprojectColor;
     [SerializeField] private Material renderMaterial;
 
     private bool isRendering = false;
-    private int renderIndex = 800;
+    private int renderIndex = 0;
+
+    DepthEquiCam depthEquiCam;
 
     // Start is called before the first frame update
     void Start()
     {
         subfolders = AssetDatabase.GetSubFolders(trainingDirectory);
+        depthEquiCam = GetComponent<DepthEquiCam>();
     }
 
     // Update is called once per frame
@@ -51,7 +56,7 @@ public class CameraControl : MonoBehaviour
             Debug.Log("Generating reprojections for files in "+trainingDirectory);
             GenerateReprojections();
             renderIndex++;
-            if (renderIndex == subfolders.Length)
+            if (renderIndex >= 3) //subfolders.Length)
             {
                 isRendering = false;
                 AssetDatabase.Refresh();
@@ -86,29 +91,55 @@ public class CameraControl : MonoBehaviour
         srcView.ReadPixels(new Rect(0, 0, srcViewRT.width, srcViewRT.height), 0, 0);
         srcView.Apply();
 
+        //TODO: need to render out depth and color separately?
+        depthEquiCam.enabled = false;
+        RenderTexture srcRGBRT = new RenderTexture(newRGBTexture.width, newRGBTexture.height, 16, RenderTextureFormat.ARGB32); 
+        Camera.main.targetTexture = srcRGBRT;
+        Camera.main.gameObject.transform.position = cameraDisplacement1;
+        Camera.main.Render();
+        depthEquiCam.enabled = true;
+        
+        //write RenderTexture to Texture2D
+        Texture2D srcRGB = new Texture2D(newRGBTexture.width, newRGBTexture.height);
+        RenderTexture.active = srcRGBRT;
+        srcRGB.ReadPixels(new Rect(0, 0, srcRGBRT.width, srcRGBRT.height), 0, 0);
+        srcRGB.Apply();
+
         //create new texture to put reprojection in
         Texture2D dstView = new Texture2D(srcView.width, srcView.height);
-        reproject(srcView, new Vector3(0,0,0), dstView, cameraDisplacement2);
+        reproject(srcView, srcRGB, new Vector3(0,0,0), dstView, cameraDisplacement2, reprojectColor);
 
         //save new reprojection in the asset directory
         string path = subfolder+"/"+label+"UncertaintyMask.png";
+        if (reprojectColor)
+        {
+            path = subfolder+"/"+label+"RGBReprojection.png";
+        }
         System.IO.File.WriteAllBytes(path, dstView.EncodeToPNG());
 
         //ScreenCapture.CaptureScreenshot(subfolder+"/"+label+"test.png", 4);
     }
 
-    void reproject(Texture2D srcView, Vector3 srcPos, Texture2D dstView, Vector3 dstPos)
+    void reproject(Texture2D srcView, Texture2D srcRGB, Vector3 srcPos, Texture2D dstView, Vector3 dstPos, bool reprojectColor=false)
     {
         for (int i=0; i<srcView.width; i++)
         {
             for (int j=0; j<srcView.height; j++)
             {
-                dstView.SetPixel(i, j, Color.white); //Color.red
+                if (reprojectColor)
+                {
+                    dstView.SetPixel(i, j, Color.black);
+                }
+                else
+                {   
+                    dstView.SetPixel(i, j, Color.white);
+                }
             }
         }
 
         float maxSrcDist = 0;
         float maxDstDist = 0;
+        float[,] reprojectedPixelDepths = new float[srcView.height+1, srcView.width+1];
 
         for (int x=0; x<srcView.width; x++)
         {
@@ -116,6 +147,7 @@ public class CameraControl : MonoBehaviour
             {
 
                 Color srcColor = srcView.GetPixel(x,y);
+                Color srcPixelRGB = srcRGB.GetPixel(x,y);
                 float srcDistToPixel = 1-srcColor.r;
                 //Vector3 srcColorVec = new Vector3(srcColor.r, srcColor.g, srcColor.b);
 
@@ -133,7 +165,7 @@ public class CameraControl : MonoBehaviour
                 //Vector3 dstPixelPos = srcPixelPos;// - (dstPos - srcPos);
                 Vector3 srcCamToSrcPixel = srcPixelPos - srcPos;
                 Vector3 dstCamToDstPixel = srcPixelPos - dstPos;
-                float dstPixelColor = 1-((dstCamToDstPixel.magnitude/srcCamToSrcPixel.magnitude) * srcDistToPixel); //- 2;
+                float dstPixelDepth = 1-((dstCamToDstPixel.magnitude/srcCamToSrcPixel.magnitude) * srcDistToPixel); //- 2;
                 Vector3 dstPixelDir = dstCamToDstPixel.normalized;
                 // Debug.Log("dstPixel X, Y and Z: "+dstPixelDir.x+", "+dstPixelDir.y+", "+dstPixelDir.z);
                 if (srcCamToSrcPixel.magnitude > maxSrcDist) maxSrcDist = srcCamToSrcPixel.magnitude;
@@ -145,10 +177,29 @@ public class CameraControl : MonoBehaviour
                 int dstPixelScreenX = (int)((dstPixelA+180)/360 * srcView.width);// % dstView.width;
                 int dstPixelScreenY = (int)((dstPixelB+90)/180 * srcView.height);// % dstView.height;
 
-                Color currentDstColor = dstView.GetPixel(dstPixelScreenX, dstPixelScreenY);
-                //if (dstPixelColor > currentDstColor.g)
+                // Color currentDstColor = dstView.GetPixel(dstPixelScreenX, dstPixelScreenY);
+
+                //if reprojecting color image, test depth of pixels
+                if (reprojectColor)
+                {
+                    if (dstPixelScreenY < 0 || dstPixelScreenY >= reprojectedPixelDepths.GetLength(0) ||
+                        dstPixelScreenX < 0 || dstPixelScreenX >= reprojectedPixelDepths.GetLength(1))
+                    {
+                        Debug.Log("reprojectedPixelDepths: ["+reprojectedPixelDepths.GetLength(0)+", "+reprojectedPixelDepths.GetLength(1)+"]");
+                        Debug.Log("trying these coords: ("+(dstPixelScreenY)+", "+dstPixelScreenX+")");
+                    }
+                    float currentDstDepth = reprojectedPixelDepths[dstPixelScreenY, dstPixelScreenX];
+                    if (dstPixelDepth > currentDstDepth)
+                    {
+                        dstView.SetPixel(dstPixelScreenX, dstPixelScreenY, srcPixelRGB);
+                        reprojectedPixelDepths[dstPixelScreenY, dstPixelScreenX] = dstPixelDepth;
+                    }
+                }
+                //otherwise, making an uncertainty map, so just paint the pixel black
+                else
+                {
                     dstView.SetPixel(dstPixelScreenX, dstPixelScreenY, Color.black); //new Color(dstPixelColor,dstPixelColor,dstPixelColor)
-                // Debug.Log("dst sceen X and Y: "+dstPixelScreenX+", "+dstPixelScreenY+" | color: "+dstPixelColor);
+                }
             }
         }
         dstView.Apply();
