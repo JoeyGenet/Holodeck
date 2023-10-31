@@ -463,7 +463,9 @@ MonoBehaviour:
   trainingDirectory: Assets/Training Data/ButterflyData/Training
   cameraDisplacement1: {x: -0.08, y: 0, z: -0.01}
   cameraDisplacement2: {x: 0.08, y: 0, z: 0.01}
-  reprojectColor: 1
+  createUncertaintyMasks: 0
+  createColorReprojections: 1
+  createDepthReprojections: 1
   renderMaterial: {fileID: 2100000, guid: 08d20132d720dda4d90199f8bd06a9c3, type: 2}
 --- !u!114 &963194234
 MonoBehaviour:
