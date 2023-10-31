@@ -63,7 +63,7 @@ public class CameraControl : MonoBehaviour
             Debug.Log("Generating reprojections for files in "+trainingDirectory);
             GenerateReprojections();
             renderIndex++;
-            if (renderIndex >= 5) //subfolders.Length)
+            if (renderIndex >=subfolders.Length) // 5) //
             {
                 isRendering = false;
                 AssetDatabase.Refresh();
