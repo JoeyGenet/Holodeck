@@ -15,6 +15,7 @@ public class CameraControl : MonoBehaviour
     //   - RGB
     // - ...
     [SerializeField] private string trainingDirectory;
+    [SerializeField] private string saveLocation;
     private string[] subfolders;
 
     //vector to move camera along for displacement
@@ -27,7 +28,7 @@ public class CameraControl : MonoBehaviour
     [SerializeField] private Material renderMaterial;
 
     private bool isRendering = false;
-    private int renderIndex = 0;
+    private int renderIndex = 800;
 
     DepthEquiCam depthEquiCam;
 
@@ -63,7 +64,7 @@ public class CameraControl : MonoBehaviour
             Debug.Log("Generating reprojections for files in "+trainingDirectory);
             GenerateReprojections();
             renderIndex++;
-            if (renderIndex >=subfolders.Length) // 5) //
+            if (renderIndex >= subfolders.Length) // 5) //
             {
                 isRendering = false;
                 AssetDatabase.Refresh();
@@ -119,19 +120,23 @@ public class CameraControl : MonoBehaviour
         reproject(srcView, srcRGB, dstViews, new Vector3(0,0,0), cameraDisplacement2);
 
         //save new masks and reprojections in the asset directory
+        //TODO: save the new images in a different location outside of asset directory
         if (createUncertaintyMasks)
         {
-            string path = subfolder+"/"+label+"UncertaintyMask.png";
+            //string path = subfolder+"/"+label+"UncertaintyMask.png";
+            string path = saveLocation+"/"+label+"/"+label+"UncertaintyMask.png";
             System.IO.File.WriteAllBytes(path, dstViews[0].EncodeToPNG());
         }
         if (createColorReprojections)
         {
-            string path = subfolder+"/"+label+"RGBReprojection.png";
+            //string path = subfolder+"/"+label+"RGBReprojection.png";
+            string path = saveLocation+"/"+label+"/"+label+"RGBReprojection.png";
             System.IO.File.WriteAllBytes(path, dstViews[1].EncodeToPNG());
         }
         if (createDepthReprojections)
         {
-            string path = subfolder+"/"+label+"DepthReprojection.png";
+            //string path = subfolder+"/"+label+"DepthReprojection.png";
+            string path = saveLocation+"/"+label+"/"+label+"DepthReprojection.png";
             System.IO.File.WriteAllBytes(path, dstViews[2].EncodeToPNG());
         }
     }
