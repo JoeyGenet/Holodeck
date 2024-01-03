@@ -461,7 +461,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   trainingDirectory: Assets/Training Data/ButterflyData/Training
-  saveLocation: C:\Joey\School\S7_2023_Fall\Research\ButterflyData\Training
+  saveLocation: C:\Joey\School\S7_2023_Fall\Research\TrainingData\ButterflyDataNoAlpha\Training
   cameraDisplacement1: {x: -0.08, y: 0, z: -0.01}
   cameraDisplacement2: {x: 0.08, y: 0, z: 0.01}
   createUncertaintyMasks: 1

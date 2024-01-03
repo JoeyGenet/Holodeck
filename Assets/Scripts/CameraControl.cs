@@ -28,7 +28,7 @@ public class CameraControl : MonoBehaviour
     [SerializeField] private Material renderMaterial;
 
     private bool isRendering = false;
-    private int renderIndex = 800;
+    private int renderIndex = 0;
 
     DepthEquiCam depthEquiCam;
 
@@ -149,8 +149,8 @@ public class CameraControl : MonoBehaviour
             for (int j=0; j<srcView.height; j++)
             {
                 dstViews[0].SetPixel(i, j, Color.white); //uncertainty mask
-                dstViews[1].SetPixel(i, j, Color.clear); //color reprojection
-                dstViews[2].SetPixel(i, j, Color.clear); //depth reprojection
+                dstViews[1].SetPixel(i, j, Color.black); //color reprojection
+                dstViews[2].SetPixel(i, j, Color.black); //depth reprojection
             }
         }
 
