@@ -6,10 +6,10 @@ using UnityEngine;
 public class ShadowMap : EditorWindow
 {
     string saveLocation;
-    Texture2D srcView;
-    Vector3 srcPos;
-    Texture2D dstView;
-    Vector3 dstPos;
+    Texture2D displacedView;
+    Vector3 displacedPos;
+    Texture2D originView;
+    Vector3 originPos;
     Texture2D shadowMap;
 
     [MenuItem("Tools/Shadow Map")]
@@ -24,20 +24,20 @@ public class ShadowMap : EditorWindow
         //set location to save the shadow map
         saveLocation = EditorGUILayout.TextField("Save Location", saveLocation);
         //select desired src and target textures and positions
-        srcView = (Texture2D)EditorGUILayout.ObjectField("Source View", srcView, typeof(Texture2D), false);
-        srcPos = EditorGUILayout.Vector3Field("Source Position", srcPos);
-        dstView = (Texture2D)EditorGUILayout.ObjectField("Destination View", dstView, typeof(Texture2D), false);
-        dstPos = EditorGUILayout.Vector3Field("Destination Position", dstPos);
+        displacedView = (Texture2D)EditorGUILayout.ObjectField("Displaced View", displacedView, typeof(Texture2D), false);
+        displacedPos = EditorGUILayout.Vector3Field("Displaced Position", displacedPos);
+        originView = (Texture2D)EditorGUILayout.ObjectField("Origin View", originView, typeof(Texture2D), false);
+        originPos = EditorGUILayout.Vector3Field("Origin Position", originPos);
 
-        if (GUILayout.Button("Reproject"))
+        if (GUILayout.Button("Create Shadow Map"))
         {
-            Debug.Log("Reprojecting...");
+            Debug.Log("Creating shadow map...");
 
-            shadowMap = new Texture2D(srcView.width, srcView.height);
+            shadowMap = new Texture2D(displacedView.width, displacedView.height);
             //initialize output images
-            for (int i=0; i<srcView.width; i++)
+            for (int i=0; i<displacedView.width; i++)
             {
-                for (int j=0; j<srcView.height; j++)
+                for (int j=0; j<displacedView.height; j++)
                 {
                     shadowMap.SetPixel(i, j, Color.black); //uncertainty mask
                 }
@@ -46,38 +46,35 @@ public class ShadowMap : EditorWindow
             float maxSrcDist = 0;
             float maxDstDist = 0;
 
-            for (int x=0; x<srcView.width; x++)
+            for (int x=0; x<displacedView.width; x++)
             {
-                for (int y=0; y<srcView.height; y++)
+                for (int y=0; y<displacedView.height; y++)
                 {
-                    //get color and depth of pixel in camera's current view pano
-                    Color srcPixelDepth = srcView.GetPixel(x,y);
-                    float srcDistToPixel = 1.0f-srcPixelDepth.r;
+                    //get depth of pixel in displaced camera's view pano
+                    float displacedPixelDepth = 1.0f-displacedView.GetPixel(x,y).r;
 
-                    //calculate the world space coords of the pixel in source view
-                    float srcPixelA = ((float)x/srcView.width*360.0f - 180.0f) * Mathf.PI/180;
-                    float srcPixelB = ((float)y/srcView.height*180.0f - 90.0f) * Mathf.PI/180;
-                    float srcPixelZ = Mathf.Cos(srcPixelA) * Mathf.Cos(srcPixelB);
-                    float srcPixelX = Mathf.Sin(srcPixelA) * Mathf.Cos(srcPixelB);
-                    float srcPixelY = Mathf.Sin(srcPixelB);
-                    Vector3 srcPixelDir = new Vector3(srcPixelX, srcPixelY, srcPixelZ);
-                    srcPixelDir = srcPixelDir.normalized;
-                    Vector3 srcPixelPos = srcPos + srcPixelDir; //srcDistToPixel*srcPixelDir;
+                    //calculate the world space coords of the pixel in displaced view
+                    float displacedPixelA = ((float)x/displacedView.width*360 - 180) * Mathf.PI/180;
+                    float displacedPixelB = ((float)y/displacedView.height*180 - 90) * Mathf.PI/180;
+                    float displacedPixelZ = Mathf.Cos(displacedPixelA) * Mathf.Cos(displacedPixelB);
+                    float displacedPixelX = Mathf.Sin(displacedPixelA) * Mathf.Cos(displacedPixelB);
+                    float displacedPixelY = Mathf.Sin(displacedPixelB);
+                    Vector3 displacedPixelDir = new Vector3(displacedPixelX, displacedPixelY, displacedPixelZ);
+                    displacedPixelDir = displacedPixelDir.normalized;
+                    Vector3 globalPixelPos = displacedPos + displacedPixelDepth*displacedPixelDir;
+                    float globalDisplacedPixelDepth = globalPixelPos.magnitude;
 
-                    //determine where the pixel ends up in the new texture with the new view
-                    Vector3 srcCamToSrcPixel = srcPixelPos - srcPos;
-                    Vector3 dstCamToDstPixel = srcPixelPos - dstPos;
-                    float dstPixelDepth = ((float)(dstCamToDstPixel.magnitude/srcCamToSrcPixel.magnitude) * srcDistToPixel);
-                    Vector3 dstPixelDir = dstCamToDstPixel.normalized;
-                    float dstPixelB = Mathf.Asin(dstPixelDir.y) * 180/Mathf.PI;
-                    float dstPixelA = Vector3.Angle(new Vector3(dstPixelDir.x,0,dstPixelDir.z), Vector3.forward) * Mathf.Sign(dstPixelDir.x);
-                    int dstPixelScreenX = (int)((dstPixelA+180.0f)/360.0f * srcView.width);
-                    int dstPixelScreenY = (int)((dstPixelB+90.0f)/180.0f * srcView.height);
+                    //determine where the pixel ends up in the new texture wrt the origin view
+                    Vector3 originPixelDir = globalPixelPos.normalized;
+                    float originPixelB = Mathf.Asin(originPixelDir.y) * 180/Mathf.PI;
+                    float originPixelA = Vector3.Angle(new Vector3(originPixelDir.x,0,originPixelDir.z), Vector3.forward) * Mathf.Sign(originPixelDir.x);
+                    int originPixelScreenX = (int)((originPixelA+180)/360 * displacedView.width);
+                    int originPixelScreenY = (int)((originPixelB+90)/180 * displacedView.height);
 
                     //if depth of reprojected pixel lies behind a pixel in the original view,
                     //that pixel must be inpainted in the displaced view
-                    float currentDstDepth = 1.0f-dstView.GetPixel(dstPixelScreenX,dstPixelScreenY).r;
-                    if (dstPixelDepth-0.01f >= currentDstDepth)
+                    float originPixelDepth = 1.0f-originView.GetPixel(originPixelScreenX,originPixelScreenY).r;
+                    if (globalDisplacedPixelDepth-0.01f >= originPixelDepth)
                     {
                         shadowMap.SetPixel(x, y, Color.white);
                     }
