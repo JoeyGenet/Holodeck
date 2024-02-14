@@ -64,23 +64,33 @@ public class ShadowMap : EditorWindow
                     Vector3 globalPixelPos = displacedPos + displacedPixelDepth*displacedPixelDir;
                     float globalDisplacedPixelDepth = globalPixelPos.magnitude;
 
-                    //determine where the pixel ends up in the new texture wrt the origin view
-                    Vector3 originPixelDir = globalPixelPos.normalized;
-                    float originPixelB = Mathf.Asin(originPixelDir.y) * 180/Mathf.PI;
-                    float originPixelA = Vector3.Angle(new Vector3(originPixelDir.x,0,originPixelDir.z), Vector3.forward) * Mathf.Sign(originPixelDir.x);
-                    int originPixelScreenX = (int)((originPixelA+180)/360 * displacedView.width);
-                    int originPixelScreenY = (int)((originPixelB+90)/180 * displacedView.height);
+                    //test areas just around the origin to better cast shadows on uncertain areas
+                    Vector3[] orignTestShiftVectors = new []
+                    {
+                        new Vector3(0.01f, 0.0f, 0.0f),
+                        new Vector3(0.0f, 0.01f, 0.0f),
+                        new Vector3(0.01f, 0.0f, 0.01f),
+                        new Vector3(-0.01f, 0.0f, 0.0f),
+                        new Vector3(0.0f, -0.01f, 0.0f),
+                        new Vector3(0.01f, 0.0f, -0.01f)
+                    };
 
-                    //if depth of reprojected pixel lies behind a pixel in the original view,
-                    //that pixel must be inpainted in the displaced view
-                    float originPixelDepth = 1.0f-originView.GetPixel(originPixelScreenX,originPixelScreenY).r;
-                    if (globalDisplacedPixelDepth-0.01f >= originPixelDepth)
+                    for (int i=0; i<6; i++)
                     {
-                        shadowMap.SetPixel(x, y, Color.white);
-                    }
-                    else
-                    {
-                        shadowMap.SetPixel(x, y, Color.black);
+                        //determine where the pixel ends up in the new texture wrt the origin view
+                        Vector3 originPixelDir = globalPixelPos.normalized - orignTestShiftVectors[i]; //test out slightly different views from the origin
+                        float originPixelB = Mathf.Asin(originPixelDir.y) * 180/Mathf.PI;
+                        float originPixelA = Vector3.Angle(new Vector3(originPixelDir.x,0,originPixelDir.z), Vector3.forward) * Mathf.Sign(originPixelDir.x);
+                        int originPixelScreenX = (int)((originPixelA+180)/360 * displacedView.width);
+                        int originPixelScreenY = (int)((originPixelB+90)/180 * displacedView.height);
+
+                        //if depth of reprojected pixel lies behind a pixel in the original view,
+                        //that pixel must be inpainted in the displaced view
+                        float originPixelDepth = 1.0f-originView.GetPixel(originPixelScreenX,originPixelScreenY).r;
+                        if (globalDisplacedPixelDepth-0.01f >= originPixelDepth)
+                        {
+                            shadowMap.SetPixel(x, y, Color.white);
+                        }
                     }
 
                 }
