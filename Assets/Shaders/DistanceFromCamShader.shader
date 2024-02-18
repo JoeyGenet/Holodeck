@@ -67,6 +67,7 @@ Shader "Unlit/DistanceFromCamShader"
         //should be same brightnes as soruce depth
         //float distanceFromCamera = 1-length(i.color.xyz - mul(unity_WorldToObject, _WorldSpaceCameraPos)); //local space of mesh, ie scale agnostic
         float distanceFromCamera = 1-length(mul(unity_ObjectToWorld, i.color.xyz) - _WorldSpaceCameraPos);   //global space, ie scale matters, only works when scale=1 though
+        distanceFromCamera = clamp(distanceFromCamera, 0.01, 1.0);
         outputDepth = distanceFromCamera;
         // apply fog
         UNITY_APPLY_FOG(i.fogCoord, col);

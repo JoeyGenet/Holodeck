@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class ShadowMap : EditorWindow
 {
-    string saveLocation;
+    string saveLocation = "C:\\Joey\\School\\S7_2023_Fall\\Research\\TestingData\\BlueOffice\\debugShadowMap.png";
     Texture2D displacedView;
     Vector3 displacedPos;
     Texture2D originView;
@@ -43,8 +43,10 @@ public class ShadowMap : EditorWindow
                 }
             }
 
-            float maxSrcDist = 0;
-            float maxDstDist = 0;
+            int maxXCoord = 0;
+            int minXCoord = 10000000;
+            int maxYCoord = 0;
+            int minYCoord = 10000000;
 
             for (int x=0; x<displacedView.width; x++)
             {
@@ -61,8 +63,8 @@ public class ShadowMap : EditorWindow
                     float displacedPixelY = Mathf.Sin(displacedPixelB);
                     Vector3 displacedPixelDir = new Vector3(displacedPixelX, displacedPixelY, displacedPixelZ);
                     displacedPixelDir = displacedPixelDir.normalized;
-                    Vector3 globalPixelPos = displacedPos + displacedPixelDepth*displacedPixelDir;
-                    float globalDisplacedPixelDepth = globalPixelPos.magnitude;
+                    Vector3 globalPixelPos = displacedPos + displacedPixelDepth*displacedPixelDir; //this might not be correct???
+                    float globalDisplacedPixelDepth = globalPixelPos.magnitude; //this seems to be correct
 
                     //test areas just around the origin to better cast shadows on uncertain areas
                     Vector3[] orignTestShiftVectors = new []
@@ -77,17 +79,47 @@ public class ShadowMap : EditorWindow
 
                     for (int i=0; i<6; i++)
                     {
+                        //TODO: issue could be in here?
+                        //need to account for displacement of original origin?
                         //determine where the pixel ends up in the new texture wrt the origin view
                         Vector3 originPixelDir = globalPixelPos.normalized - orignTestShiftVectors[i]; //test out slightly different views from the origin
                         float originPixelB = Mathf.Asin(originPixelDir.y) * 180/Mathf.PI;
+                        // float originPixelA = Mathf.Acos(originPixelDir.x / Mathf.Cos(originPixelB)) * 180/Mathf.PI;
                         float originPixelA = Vector3.Angle(new Vector3(originPixelDir.x,0,originPixelDir.z), Vector3.forward) * Mathf.Sign(originPixelDir.x);
-                        int originPixelScreenX = (int)((originPixelA+180)/360 * displacedView.width);
-                        int originPixelScreenY = (int)((originPixelB+90)/180 * displacedView.height);
+                        int originPixelScreenX = (int)((originPixelA+180)/360 * originView.width);
+                        int originPixelScreenY = (int)((originPixelB+90)/180 * originView.height);
 
                         //if depth of reprojected pixel lies behind a pixel in the original view,
                         //that pixel must be inpainted in the displaced view
+                        if (originPixelScreenX < minXCoord) minXCoord = originPixelScreenX;
+                        if (originPixelScreenX > maxXCoord) maxXCoord = originPixelScreenX;
+                        if (originPixelScreenY < minYCoord) minYCoord = originPixelScreenY;
+                        if (originPixelScreenY > maxYCoord) maxYCoord = originPixelScreenY;
+
                         float originPixelDepth = 1.0f-originView.GetPixel(originPixelScreenX,originPixelScreenY).r;
-                        if (globalDisplacedPixelDepth-0.01f >= originPixelDepth)
+                        // debug suite
+                        // if (x==1000 && y==1045)
+                        // {
+                        //     shadowMap.SetPixel(x, y, Color.green);
+                        //     float recreatedPixelA = ((float)originPixelScreenX/originView.width*360 - 180) * Mathf.PI/180;
+                        //     float recreatedPixelB = ((float)originPixelScreenY/originView.height*180 - 90) * Mathf.PI/180;
+                        //     float recreatedPixelZ = Mathf.Cos(recreatedPixelA) * Mathf.Cos(recreatedPixelB);
+                        //     float recreatedPixelX = Mathf.Sin(recreatedPixelA) * Mathf.Cos(recreatedPixelB);
+                        //     float recreatedPixelY = Mathf.Sin(recreatedPixelB);
+                        //     Vector3 recreatedPixelDir = new Vector3(recreatedPixelX, recreatedPixelY, recreatedPixelZ);
+                        //     recreatedPixelDir = recreatedPixelDir.normalized;
+                        //     Vector3 recreatedGlobalPixelPos = originPos + originPixelDepth*recreatedPixelDir;
+                            
+                        //     Debug.Log("global position of pixel from novel view: "+globalPixelPos);
+                        //     Debug.Log("recreated global position of pixel: "+recreatedGlobalPixelPos);
+                        //     Debug.Log("------------------------");
+                        //     Debug.Log("novel pixel image coords: ("+x+", "+y+")");
+                        //     Debug.Log("depth of pixel from novel view: "+globalDisplacedPixelDepth);
+                        //     Debug.Log("------------------------");
+                        //     Debug.Log("origin pixel image coords: ("+originPixelScreenX+", "+originPixelScreenY+")");
+                        //     Debug.Log("depth of corresponding pixel in origin view: "+originPixelDepth);
+                        // }
+                        if (globalDisplacedPixelDepth-0.03f >= originPixelDepth)
                         {
                             shadowMap.SetPixel(x, y, Color.white);
                         }
@@ -98,7 +130,8 @@ public class ShadowMap : EditorWindow
             shadowMap.Apply();
             System.IO.File.WriteAllBytes(saveLocation, shadowMap.EncodeToPNG());
             Debug.Log("Done");
-            Debug.Log("maxSrcDist: "+maxSrcDist+", maxSrcDist: "+maxDstDist);
+            // Debug.Log("min coords: ("+minXCoord+", : "+minYCoord+")");
+            // Debug.Log("max coords: ("+maxXCoord+", : "+maxYCoord+")");
         }
 
     }
