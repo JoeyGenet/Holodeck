@@ -69,12 +69,12 @@ public class ShadowMap : EditorWindow
                     //test areas just around the origin to better cast shadows on uncertain areas
                     Vector3[] orignTestShiftVectors = new []
                     {
-                        new Vector3(0.01f, 0.0f, 0.0f),
-                        new Vector3(0.0f, 0.01f, 0.0f),
-                        new Vector3(0.01f, 0.0f, 0.01f),
-                        new Vector3(-0.01f, 0.0f, 0.0f),
-                        new Vector3(0.0f, -0.01f, 0.0f),
-                        new Vector3(0.01f, 0.0f, -0.01f)
+                        new Vector3(0.01f, 0.00f, 0.00f),
+                        new Vector3(0.00f, 0.01f, 0.00f),
+                        new Vector3(0.00f, 0.00f, 0.01f),
+                        new Vector3(-0.01f, 0.00f, 0.00f),
+                        new Vector3(0.00f, -0.01f, 0.00f),
+                        new Vector3(0.00f, 0.00f, -0.01f)
                     };
 
                     for (int i=0; i<6; i++)

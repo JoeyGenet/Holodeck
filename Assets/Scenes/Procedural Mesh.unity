@@ -1115,11 +1115,9 @@ GameObject:
   - component: {fileID: 963194228}
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
-  - component: {fileID: 963194233}
+  - component: {fileID: 963194234}
   - component: {fileID: 963194230}
   - component: {fileID: 963194232}
-  - component: {fileID: 963194234}
-  - component: {fileID: 963194231}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1206,19 +1204,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   RenderResolution: 1024
---- !u!114 &963194231
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963194225}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 075015d2b5f92e9448e2f04efc29a4a5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  depthLevel: 0.5
 --- !u!114 &963194232
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1232,7 +1217,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   RenderResolution: 1024
---- !u!114 &963194233
+--- !u!114 &963194234
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1241,30 +1226,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 82e82dc9d07050a4cbec950dcd1fd836, type: 3}
+  m_Script: {fileID: 11500000, guid: f50b983d906180c4b8582ef32e3f4ecd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  trainingDirectory: Assets/Training Data/Test
-  saveLocation: C:\Joey\School\S7_2023_Fall\Research\TrainingData\Test
-  cameraDisplacement1: {x: 0, y: 0, z: 0}
-  cameraDisplacement2: {x: 0.08, y: 0, z: 0}
-  createUncertaintyMasks: 1
-  createColorReprojections: 1
-  createDepthReprojections: 1
-  renderMaterial: {fileID: 2100000, guid: 08d20132d720dda4d90199f8bd06a9c3, type: 2}
---- !u!114 &963194234
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 963194225}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b93fa95d73aa67498fd0e36c888997d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  RenderResolution: 2048
+  trainingDirectory: Assets/PanoramaEnvironments/benchmarkTests
+  saveLocation: C:\Joey\School\S7_2023_Fall\Research\TestingData\benchmarkTests
+  renderMaterial: {fileID: 2100000, guid: a3064e4f69c5ddf4fb96222368b22c76, type: 2}
 --- !u!1 &1040005060
 GameObject:
   m_ObjectHideFlags: 0
