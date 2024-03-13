@@ -69,12 +69,12 @@ public class ShadowMap : EditorWindow
                     //test areas just around the origin to better cast shadows on uncertain areas
                     Vector3[] orignTestShiftVectors = new []
                     {
-                        new Vector3(0.01f, 0.00f, 0.00f),
-                        new Vector3(0.00f, 0.01f, 0.00f),
-                        new Vector3(0.00f, 0.00f, 0.01f),
-                        new Vector3(-0.01f, 0.00f, 0.00f),
-                        new Vector3(0.00f, -0.01f, 0.00f),
-                        new Vector3(0.00f, 0.00f, -0.01f)
+                        new Vector3(0.01f, 0.0f, 0.0f),
+                        new Vector3(0.0f, 0.01f, 0.0f),
+                        new Vector3(0.01f, 0.0f, 0.01f),
+                        new Vector3(-0.01f, 0.0f, 0.0f),
+                        new Vector3(0.0f, -0.01f, 0.0f),
+                        new Vector3(0.01f, 0.0f, -0.01f)
                     };
 
                     for (int i=0; i<6; i++)
@@ -119,7 +119,8 @@ public class ShadowMap : EditorWindow
                         //     Debug.Log("origin pixel image coords: ("+originPixelScreenX+", "+originPixelScreenY+")");
                         //     Debug.Log("depth of corresponding pixel in origin view: "+originPixelDepth);
                         // }
-                        if (globalDisplacedPixelDepth-0.03f >= originPixelDepth)
+                        if (globalDisplacedPixelDepth-0.03f >= originPixelDepth && 
+                            globalDisplacedPixelDepth<0.95f && originPixelDepth<0.95f) //TODO: account for forced-deep pixels
                         {
                             shadowMap.SetPixel(x, y, Color.white);
                         }

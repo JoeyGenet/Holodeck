@@ -68,7 +68,14 @@ Shader "Unlit/DistanceFromCamShader"
         //float distanceFromCamera = 1-length(i.color.xyz - mul(unity_WorldToObject, _WorldSpaceCameraPos)); //local space of mesh, ie scale agnostic
         float distanceFromCamera = 1-length(mul(unity_ObjectToWorld, i.color.xyz) - _WorldSpaceCameraPos);   //global space, ie scale matters, only works when scale=1 though
         distanceFromCamera = clamp(distanceFromCamera, 0.01, 1.0);
-        outputDepth = distanceFromCamera;
+        if (length(mul(unity_ObjectToWorld, i.color.xyz)) >= 0.78f) //TODO: forcing sky to be black
+        {
+            outputDepth = 0.01;
+        }
+        else
+        {
+            outputDepth = distanceFromCamera;
+        }
         // apply fog
         UNITY_APPLY_FOG(i.fogCoord, col);
         return col;
