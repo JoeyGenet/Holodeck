@@ -6,11 +6,14 @@ using UnityEngine;
 public class ShadowMap : EditorWindow
 {
     string saveLocation = "C:\\Joey\\School\\S7_2023_Fall\\Research\\TestingData\\BlueOffice\\debugShadowMap.png";
+    string saveLocation2 = "C:\\Joey\\School\\S7_2023_Fall\\Research\\TestingData\\BlueOffice\\debugSkyboxMap.png";
+    bool createSkyboxMap = false;
     Texture2D displacedView;
     Vector3 displacedPos;
     Texture2D originView;
     Vector3 originPos;
     Texture2D shadowMap;
+    Texture2D skyboxMap;
 
     [MenuItem("Tools/Shadow Map")]
     public static void ShowMyEditor()
@@ -22,7 +25,13 @@ public class ShadowMap : EditorWindow
     public void OnGUI()
     {
         //set location to save the shadow map
-        saveLocation = EditorGUILayout.TextField("Save Location", saveLocation);
+        saveLocation = EditorGUILayout.TextField("Shadow Map Save Location", saveLocation);
+        createSkyboxMap = GUILayout.Toggle(createSkyboxMap, "Save separate skybox map");
+        if (createSkyboxMap)
+        {
+            saveLocation2 = EditorGUILayout.TextField("Skybox Map Save Location", saveLocation2);
+        }
+
         //select desired src and target textures and positions
         displacedView = (Texture2D)EditorGUILayout.ObjectField("Displaced View", displacedView, typeof(Texture2D), false);
         displacedPos = EditorGUILayout.Vector3Field("Displaced Position", displacedPos);
@@ -34,12 +43,15 @@ public class ShadowMap : EditorWindow
             Debug.Log("Creating shadow map...");
 
             shadowMap = new Texture2D(displacedView.width, displacedView.height);
+            skyboxMap = new Texture2D(displacedView.width, displacedView.height);
+
             //initialize output images
             for (int i=0; i<displacedView.width; i++)
             {
                 for (int j=0; j<displacedView.height; j++)
                 {
                     shadowMap.SetPixel(i, j, Color.black); //uncertainty mask
+                    skyboxMap.SetPixel(i, j, Color.black); //mask for areas in the skybox
                 }
             }
 
@@ -124,12 +136,20 @@ public class ShadowMap : EditorWindow
                         {
                             shadowMap.SetPixel(x, y, Color.white);
                         }
+                        if (displacedPixelDepth>=0.95f && 1.0f-originView.GetPixel(x, y).r>=0.95f)
+                        {
+                            skyboxMap.SetPixel(x, y, Color.white);
+                        }
                     }
 
                 }
             }
             shadowMap.Apply();
             System.IO.File.WriteAllBytes(saveLocation, shadowMap.EncodeToPNG());
+            if (createSkyboxMap)
+            {
+                System.IO.File.WriteAllBytes(saveLocation2, skyboxMap.EncodeToPNG());
+            }
             Debug.Log("Done");
             // Debug.Log("min coords: ("+minXCoord+", : "+minYCoord+")");
             // Debug.Log("max coords: ("+maxXCoord+", : "+maxYCoord+")");
