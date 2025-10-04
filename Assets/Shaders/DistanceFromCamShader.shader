@@ -7,6 +7,7 @@ Shader "Unlit/DistanceFromCamShader"
         _MainTex ("Texture", 2D) = "white" {}
         _DepthTex ("Texture", 2D) = "white" {}
         _CamPos ("Camera Position", VECTOR) = (0,0,0)
+        _SkyboxDepth ("Depth of Skybox", float) = 0.78
 
         [Header(Rendering)]
         _Offset("Offset", float) = 0
@@ -24,6 +25,7 @@ Shader "Unlit/DistanceFromCamShader"
     sampler2D _DepthTex;
     float4 _DepthTex_ST;
     float3 _CamPos;
+    float _SkyboxDepth;
 
     struct appdata
     {
@@ -68,7 +70,7 @@ Shader "Unlit/DistanceFromCamShader"
         //float distanceFromCamera = 1-length(i.color.xyz - mul(unity_WorldToObject, _WorldSpaceCameraPos)); //local space of mesh, ie scale agnostic
         float distanceFromCamera = 1-length(mul(unity_ObjectToWorld, i.color.xyz) - _WorldSpaceCameraPos);   //global space, ie scale matters, only works when scale=1 though
         distanceFromCamera = clamp(distanceFromCamera, 0.01, 1.0);
-        if (length(mul(unity_ObjectToWorld, i.color.xyz)) >= 0.78f) //TODO: forcing sky to be black
+        if (length(mul(unity_ObjectToWorld, i.color.xyz)) >= _SkyboxDepth) //TODO: forcing sky to be black  0.78f
         {
             outputDepth = 0.01;
         }

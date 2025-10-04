@@ -1,0 +1,9 @@
+Displacement 1: (x: -0.35, y=0.03, z=-0.1) //from origin
+
+Displacement 2: (x: 0.13, y=0, z=-0.25) //also from origin
+
+Displacement 2: (x: -0.1, y=0, z=0.1) //also from origin
+
+thiis test was performed after:
+- forcing the depth of skybox pixels using the custom shader
+- implementing skybox latent replacement

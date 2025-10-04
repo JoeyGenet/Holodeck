@@ -78,6 +78,22 @@ public class NovelViewGeneration : MonoBehaviour
         renderMaterial.SetTexture("_MainTex", originRGB);
         renderMaterial.SetTexture("_DepthTex", originDepth);
 
+        // generate initial depth image at origin
+        //    this may be affected by the custom depth information in the DistanceFromCamShader
+        depthEquiCam.enabled = true;
+        RenderTexture newOriginDepthRT = new RenderTexture(originRGB.width, originRGB.height, 16, RenderTextureFormat.ARGB32); 
+        Camera.main.targetTexture = newOriginDepthRT;
+        Camera.main.gameObject.transform.position = new Vector3(0,0,0);
+        Camera.main.Render();
+        //save displaced depth texture
+        Texture2D newOriginDepth = new Texture2D(originRGB.width, originRGB.height);
+        RenderTexture.active = newOriginDepthRT;
+        newOriginDepth.ReadPixels(new Rect(0, 0, newOriginDepthRT.width, newOriginDepthRT.height), 0, 0);
+        newOriginDepth.Apply();
+        //save the new origin Depth
+        string originPath = saveLocation+"/"+label+"/"+label+"Depth"+".png";
+        System.IO.File.WriteAllBytes(originPath, newOriginDepth.EncodeToPNG());
+
         // TODO: loop through and generate multiple novel views
         Vector3[] testShiftVectors = new []
         {
@@ -121,11 +137,15 @@ public class NovelViewGeneration : MonoBehaviour
 
             //fill out shadow map based on origin and displaced depth
             Texture2D shadowMap = new Texture2D(displacedDepth.width, displacedDepth.height);
-            CreateShadowMap(originDepth, displacedDepth, displacementVector, shadowMap);
+            Texture2D skyboxMap = new Texture2D(displacedDepth.width, displacedDepth.height);
+            CreateShadowMap(newOriginDepth, displacedDepth, displacementVector, shadowMap, skyboxMap);
 
             //save the shadow map
             string path = saveLocation+"/"+label+"/"+label+"ShadowMask"+shiftDirections[displacementIndex]+".png";
             System.IO.File.WriteAllBytes(path, shadowMap.EncodeToPNG());
+            //save the skybox map
+            path = saveLocation+"/"+label+"/"+label+"SkyboxMask"+shiftDirections[displacementIndex]+".png";
+            System.IO.File.WriteAllBytes(path, skyboxMap.EncodeToPNG());
             //save displaced RGB
             path = saveLocation+"/"+label+"/"+label+"DisplacedRGB"+shiftDirections[displacementIndex]+".jpg";
             System.IO.File.WriteAllBytes(path, displacedRGB.EncodeToPNG());
@@ -136,7 +156,7 @@ public class NovelViewGeneration : MonoBehaviour
 
     }
 
-    void CreateShadowMap(Texture2D originView, Texture2D displacedView, Vector3 displacedPos, Texture2D shadowMap)
+    void CreateShadowMap(Texture2D originView, Texture2D displacedView, Vector3 displacedPos, Texture2D shadowMap, Texture2D skyboxMap)
     {
         // shadowMap = new Texture2D(displacedView.width, displacedView.height);
         //initialize output images
@@ -145,8 +165,11 @@ public class NovelViewGeneration : MonoBehaviour
             for (int j=0; j<displacedView.height; j++)
             {
                 shadowMap.SetPixel(i, j, Color.black); //uncertainty mask
+                skyboxMap.SetPixel(i, j, Color.black); //mask for areas in the skybox
             }
         }
+
+        float originScale = (float)displacedView.width/(float)originView.width;
 
         for (int x=0; x<displacedView.width; x++)
         {
@@ -192,9 +215,16 @@ public class NovelViewGeneration : MonoBehaviour
                     //if depth of reprojected pixel lies behind a pixel in the original view,
                     //that pixel must be inpainted in the displaced view
                     float originPixelDepth = 1.0f-originView.GetPixel(originPixelScreenX,originPixelScreenY).r;
-                    if (globalDisplacedPixelDepth-0.03f >= originPixelDepth)
+                    if (globalDisplacedPixelDepth-0.03f >= originPixelDepth || 
+                        globalDisplacedPixelDepth>=0.95f || originPixelDepth>=0.95f) //TODO: account for forced-deep pixels
                     {
                         shadowMap.SetPixel(x, y, Color.white);
+                    }
+
+                    // if (globalDisplacedPixelDepth>=0.95f && originPixelDepth>=0.95f)
+                    if (displacedPixelDepth>=0.95f && 1.0f-originView.GetPixel((int)(x/originScale), (int)(y/originScale)).r>=0.95f)
+                    {
+                        skyboxMap.SetPixel(x, y, Color.white);
                     }
                 }
 

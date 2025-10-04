@@ -33,6 +33,7 @@ public class ShadowMap : EditorWindow
         }
 
         //select desired src and target textures and positions
+        //TODO: determine file save paths from paths of og/displaced views
         displacedView = (Texture2D)EditorGUILayout.ObjectField("Displaced View", displacedView, typeof(Texture2D), false);
         displacedPos = EditorGUILayout.Vector3Field("Displaced Position", displacedPos);
         originView = (Texture2D)EditorGUILayout.ObjectField("Origin View", originView, typeof(Texture2D), false);
@@ -59,6 +60,7 @@ public class ShadowMap : EditorWindow
             int minXCoord = 10000000;
             int maxYCoord = 0;
             int minYCoord = 10000000;
+            float originScale = (float)displacedView.width/(float)originView.width;
 
             for (int x=0; x<displacedView.width; x++)
             {
@@ -131,12 +133,19 @@ public class ShadowMap : EditorWindow
                         //     Debug.Log("origin pixel image coords: ("+originPixelScreenX+", "+originPixelScreenY+")");
                         //     Debug.Log("depth of corresponding pixel in origin view: "+originPixelDepth);
                         // }
-                        if (globalDisplacedPixelDepth-0.03f >= originPixelDepth && 
-                            globalDisplacedPixelDepth<0.95f && originPixelDepth<0.95f) //TODO: account for forced-deep pixels
+                        // if (globalDisplacedPixelDepth-0.03f >= originPixelDepth && 
+                        //     globalDisplacedPixelDepth<0.95f && originPixelDepth<0.95f) //TODO: account for forced-deep pixels
+                        if (globalDisplacedPixelDepth-0.03f >= originPixelDepth || 
+                            globalDisplacedPixelDepth>=0.95f || originPixelDepth>=0.95f) //TODO: account for forced-deep pixels
                         {
+                            if (globalDisplacedPixelDepth>=0.95f && originPixelDepth>=0.95f)// && globalDisplacedPixelDepth-0.03f < originPixelDepth)
+                                shadowMap.SetPixel(x, y, new Color(0.5f,0.5f,0.5f,1));
+                            else
                             shadowMap.SetPixel(x, y, Color.white);
                         }
-                        if (displacedPixelDepth>=0.95f && 1.0f-originView.GetPixel(x, y).r>=0.95f)
+
+                        // if (globalDisplacedPixelDepth>=0.95f && originPixelDepth>=0.95f)
+                        if (displacedPixelDepth>=0.95f && 1.0f-originView.GetPixel((int)(x/originScale), (int)(y/originScale)).r>=0.95f)
                         {
                             skyboxMap.SetPixel(x, y, Color.white);
                         }
